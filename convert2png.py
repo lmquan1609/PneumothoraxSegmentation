@@ -23,7 +23,8 @@ def argparser():
 
 def get_mask(encode, height, width):
     if encode == []:
-        encode.append(-1)
+        print(encode)
+        encode.append('-1')
     mask = rle2mask(encode[0], height, width)
     for e in encode[1:]:
         mask += rle2mask(e, height, width)
@@ -50,6 +51,12 @@ def conversion_for_train(train_fns, encode_df, output_path, image_size, n_thread
     if os.path.isdir(output_path):
         shutil.rmtree(output_path)
     
+    if os.path.isdir(os.path.join(output_path, 'train')):
+        shutil.rmtree(os.path.join(output_path, 'train'))
+    
+    if os.path.isdir(os.path.join(output_path, 'mask')):
+        shutil.rmtree(os.path.join(output_path, 'mask'))
+
     os.makedirs(os.path.join(output_path, 'train'), exist_ok=True)
     os.makedirs(os.path.join(output_path, 'mask'), exist_ok=True)
 
@@ -60,6 +67,9 @@ def conversion_for_train(train_fns, encode_df, output_path, image_size, n_thread
         print('InvalidDicomError')
 
 def conversion_for_test(test_fns, output_path, image_size, n_threads=-1):
+    if os.path.isdir(os.path.join(output_path, 'test')):
+        shutil.rmtree(os.path.join(output_path, 'test'))
+
     os.makedirs(os.path.join(output_path, 'test'), exist_ok=True)
     try:
         Parallel(n_jobs=n_threads, backend='threading')(delayed(conversion_for_test_file)(
