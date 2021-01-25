@@ -9,7 +9,7 @@ import cv2
 import shutil
 import pydicom
 
-from .mask_functions import rle2mask
+from utils.mask_functions import rle2mask
 
 def argparser():
     parser = argparse.ArgumentParser()
