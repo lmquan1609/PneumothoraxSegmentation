@@ -22,7 +22,6 @@ def argparser():
     return vars(parser.parse_args())
 
 def get_mask(encode, height, width):
-    print(encode[0])
     mask = rle2mask(encode[0], height, width)
     for e in encode[1:]:
         mask += rle2mask(e, height, width)

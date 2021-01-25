@@ -2,6 +2,7 @@ import numpy as np
 
 def rle2mask(rle, width, height):
     mask = np.zeros(height * width, dtype='uint8')
+    print(rle)
     if rle == ['-1']:
         return mask.reshape(width, height)
     
