@@ -1,7 +1,7 @@
 import numpy as np
 
 def rle2mask(rle, width, height):
-    mask = np.zeros(height * width, dtype='uint8')
+    mask = np.zeros(height * width)
     print(rle)
     if rle == ['-1']:
         return mask.reshape(width, height)
@@ -13,5 +13,5 @@ def rle2mask(rle, width, height):
         curr_position += start
         mask[curr_position:curr_position + length] = 255
         curr_position += length
-    
+    print(mask)
     return mask.reshape(width, height)
