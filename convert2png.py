@@ -1,3 +1,5 @@
+# USAGE
+#  python convert2png.py --train-path siim/dicom-images-train/ --test-path siim/dicom-images-test/ --rle-path siim/train-rle.csv --output-path output/dataset1024 --image-size 1024
 from imutils import paths
 from joblib import Parallel, delayed
 from skimage.transform import resize
