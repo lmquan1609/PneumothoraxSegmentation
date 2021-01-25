@@ -84,4 +84,4 @@ if __name__ == '__main__':
     rle = pd.read_csv(args['rle_path'])
 
     conversion_for_train(train_fns, rle, args['output_path'], args['image_size'], n_threads=args['number_threads'])
-    conversion_for_test(test_fns, args['output_path'], args['number_threads'])
+    conversion_for_test(test_fns, args['output_path'], args['image_size'])
