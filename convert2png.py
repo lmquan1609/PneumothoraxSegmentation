@@ -34,8 +34,7 @@ def conversion_for_train_file(file_name, encode_df, output_path, image_size):
     image = pydicom.read_file(file_name).pixel_array
     fn_wo_ext = file_name.split(os.path.sep)[-1][:-4]
     encode = list(encode_df.loc[encode_df['ImageId'] == fn_wo_ext, 'EncodedPixels'].values)
-    if encode == []:
-        print(fn_wo_ext)
+    if encode == []: return
     encode = get_mask(encode, image.shape[1], image.shape[0])
     image = resize(image, (image_size, image_size))
 
