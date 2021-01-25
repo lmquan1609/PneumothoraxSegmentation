@@ -19,7 +19,7 @@ def argparser():
     parser.add_argument('--output-path', default='dataset', type=str, help='Path for saving dataset')
     parser.add_argument('--image-size', default=1024, type=int, help='Converted image size')
     parser.add_argument('--number-threads', default=-1, type=int, help='Number of using threads')
-    return parser.parse_args()
+    return vars(parser.parse_args())
 
 def get_mask(encode, height, width):
     if encode == []:
