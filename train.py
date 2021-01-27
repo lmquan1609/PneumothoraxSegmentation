@@ -5,6 +5,9 @@ from pathlib import Path
 from utils import helpers
 import albumentations as albu
 
+import importlib
+import functools
+
 def argparser():
     parser = argparse.ArgumentParser()
     parser.add_argument('--train-config', type=str, help='Path to train config file path')
@@ -40,10 +43,21 @@ if __name__ == '__main__':
     use_sampler = train_config['USE_SAMPLER']
 
     dataset_folder = train_config['DATA_DIRECTORY']
-    folds_path = train_config['FOLD']['FILE']
+    folds_distr_path = train_config['FOLD']['FILE']
 
     num_workers = train_config['WORKERS']
     batch_size = train_config['BATCH_SIZE']
     n_folds = train_config['FOLD']['NUMBER']
 
-    
+    usefolds = map(str, train_config['FOLD']['USEFOLDS'])
+
+    binarizer_module = importlib.import_module(train_config['MASK_BINARIZER']['PY'])
+    binarizer_class = getattr(binarizer_module, train_config['MASK_BINARIZER']['CLASS'])
+    binarizer_fn = binarizer_class(**train_config['MASK_BINARIZER']['ARGS'])
+
+    eval_module = importlib.import_module(train_config['EVALUATION_METRIC']['PY'])
+    eval_fn = getattr(eval_module, train_config['EVALUATION_METRIC']['CLASS'])
+    eval_fn = functools.partial(**train_config['EVALUATION_METRIC']['ARGS'])
+
+    for fold_id in usefolds:
+        main_logger.info(f'Start training of {fold_id} fold...')
