@@ -80,3 +80,26 @@ class PneumothoraxDataset(torch.utils.data.Dataset):
     def __len__(self):
         return self.num_data
 
+class PneumoSampler(torch.utils.data.Sampler):
+    def __init__(self, folds_distr_path, fold_index, demand_non_empty_prob):
+        assert demand_non_empty_prob > 0, 'frequency of non-empty images must be greater than zero'
+        self.fold_index = fold_index
+        self.positive_prob = demand_non_empty_prob
+
+        self.folds = pd.read_csv(folds_distr_path)
+        self.folds['fold'] = self.folds['fold'].astype(str)
+        self.folds = self.folds[folds['fold'] != fold_index].reset_index(drop=True)
+
+        self.positive_indices = self.folds[self.folds['exist_labels'] == 1].index.values
+        self.negative_indices = self.folds[self.folds['exist_labels'] == 0].index.values
+
+        self.n_positive = self.positive_indices.shape[0]
+        self.n_negative = int(self.n_positive * (1 - self.positive_prob) / self.positive_prob)
+
+    def __iter__(self):
+        negative_sample = np.random.choice(self.negative_indices, self.n_negative)
+        shuffled = np.random.permutation(np.hstack((negative_sample, self.positive_indices)))
+        return iter(shuffled.tolist())
+
+    def __len__(self):
+        return self.n_positive + self.n_negative
