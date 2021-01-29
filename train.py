@@ -10,6 +10,7 @@ import importlib
 import functools
 
 from pneumothorax_dataset import PneumothoraxDataset, PneumoSampler
+from learning import Learning
 
 def argparser():
     parser = argparse.ArgumentParser()
@@ -27,12 +28,12 @@ def train_fold(train_config, experiment_folder, pipeline_name, log_dir, fold_id,
     checkpoints_history_folder = Path(
         experiment_folder,
         train_config['CHECKPOINTS']['FULL_FOLDER'],
-        f'fold{fold_id}'
+        f'fold_{fold_id}'
     )
     checkpoints_history_folder.mkdir(parents=True, exist_ok=True)
     checkpoints_topk = train_config['CHECKPOINTS']['TOPK']
 
-    calculation_name = f'{pipeline_name}_fold{fold_id}'
+    calculation_name = f'{pipeline_name}_fold_{fold_id}'
 
     device = train_config['DEVICE']
 
@@ -46,12 +47,12 @@ def train_fold(train_config, experiment_folder, pipeline_name, log_dir, fold_id,
         pretrained_model_path = Path(
             pretrained_model_config['PIPELINE_PATH'],
             pretrained_model_config['CHECKPOINTS_FOLDER'],
-            f'{loaded_pipeline_name}_fold{fold_id}.pth'
+            f'{loaded_pipeline_name}_fold_{fold_id}.pth'
         )
 
         if pretrained_model_path.is_file():
             model.load_state_dict(torch.load(pretrained_model_path))
-            fold_logger.info(f'load model from {pretrained_model_path}')
+            fold_logger.info(f'Load model from {pretrained_model_path}')
 
     if len(train_config['DEVICE_LIST']) > 1:
         model = torch.nn.DataParallel(model)
@@ -73,7 +74,12 @@ def train_fold(train_config, experiment_folder, pipeline_name, log_dir, fold_id,
 
     freeze_model = train_config['MODEL']['FREEZE']
 
-
+    Learning(
+        optimizer, binarizer_fn, loss_fn, eval_fn, device, n_epochs, scheduler,
+        freeze_model, grad_clip, grad_accum, early_stopping, validation_frequency,
+        calculation_name, best_checkpoint_folder, checkpoints_history_folder,
+        checkpoints_topk, fold_logger
+    ).run_train(model, train_dataloader, val_dataloader)
 
 if __name__ == '__main__':
     args = argparser()
@@ -98,7 +104,7 @@ if __name__ == '__main__':
     dataset_folder = train_config['DATA_DIRECTORY']
 
     train_transform = albu.load(train_config['TRAIN_TRANSFORMS'])
-    val_transform = albu.load(train_config['VALID_TRANSFORMS'])
+    val_transform = albu.load(train_config['VAL_TRANSFORMS'])
 
     # ? non_empty_mask_prob/ use_sampler is not sure
     non_empty_mask_prob = train_config.get('NON_EMPTY_MASK_PROB', 0)
@@ -150,3 +156,7 @@ if __name__ == '__main__':
             val_dataset, batch_size=batch_size, num_workers=num_workers
         )
 
+        train_fold(
+            train_config, experiment_folder, pipeline_name, log_dir, fold_id,
+            train_dataloader, val_dataloader, binarizer_fn, eval_fn
+        )

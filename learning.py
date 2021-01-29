@@ -33,8 +33,7 @@ class Learning:
 
         self.calculation_name = calculation_name
         self.best_checkpoint_path = Path(
-            best_checkpoint_folder,
-            f'{self.calculation_name}.pth'
+            best_checkpoint_folder, f'{self.calculation_name}.pth'
         )
         self.checkpoints_history_folder = Path(checkpoints_history_folder)
         self.checkpoints_topk = checkpoints_topk
@@ -94,7 +93,7 @@ class Learning:
                     metrics[curr_threshold] = (metrics[curr_threshold] * batch_idx + curr_metric) / (batch_idx + 1)
                 
                 best_threshold = max(metrics, key=metrics.get)
-                tqdm_loader.set_description(f'score: {metrics[best_threshold]:.5} at threshold {best_threshold}')
+                tqdm_loader.set_description(f'Score: {metrics[best_threshold]:.5} at threshold {best_threshold}')
         
         return metrics, metrics[best_threshold]
 
@@ -109,4 +108,75 @@ class Learning:
         epoch_summary = pd.DataFrame.from_dict([metrics])
         epoch_summary['epoch'] = epoch
         epoch_summary['best_metric'] = metrics[best_threshold]
-        epoch_summary
+        epoch_summary = epoch_summary[['epoch', 'best_metric'] + list(metrics.keys())]
+        epoch_summary.columns = list(map(str, epoch_summary.columns))
+
+        self.logger.info(f'Epoch {epoch + 1}\tScore: {metrics[best_threshold]:.5} at params: {best_threshold}')
+
+        if not self.summary_file.is_file():
+            epoch_summary.to_csv(self.summary_file, index=False)
+        else:
+            summary = pd.read_csv(self.summary_file)
+            summary = summary.append(epoch_summary).reset_index(drop=True)
+            summary.to_csv(self.summary_file, index=False)
+
+    @staticmethod
+    def get_state_dict(model):
+        if type(model) == torch.nn.DataParallel:
+            state_dict = model.module.state_dict()
+        else:
+            state_dict = model.state_dict()
+        return state_dict
+
+    def post_preprocessing(self, score, epoch, model):
+        if self.freeze_model:
+            return
+        
+        checkpoints_history_path = Path(
+            self.checkpoints_history_folder, f'{self.calculation_name}_epoch_{epoch:03d}.pth'
+        )
+
+        torch.save(self.get_state_dict(model), checkpoints_history_path)
+        heapq.heappush(self.score_heap, (score, checkpoints_history_path))
+        if len(self.score_heap) > self.checkpoints_topk:
+            _, removing_checkpoint_path = heapq.heappop(self.score_heap)
+            removing_checkpoint_path.unlink()
+            self.logger.info(f'Removed checkpint at {removing_checkpoint_path}')
+        
+        if score > self.best_score:
+            self.best_score = score
+            self.best_epoch = epoch
+            torch.save(self.get_state_dict(model), self.best_checkpoint_path)
+            self.logger.info(f'Epoch {epoch + 1}:\tBest model\tScore: {score:.5}')
+
+        if self.scheduler.__class__.__name__ == 'ReduceLROnPlateau':
+            self.scheduler.step(score)
+        else:
+            self.scheduler.step()
+
+    def run_train(self, model, train_dataloader, val_dataloader):
+        model.to(self.device)
+        for epoch in range(self.n_epochs):
+            if not self.freeze_model:
+                self.logger.info(f'Epoch {epoch + 1}\tStart training...')
+                model.train()
+                train_loss_mean = self.train_epoch(model, train_dataloader)
+                self.logger.info(f'Epoch {epoch + 1}\tCalculated train loss: {train_loss_mean:.5}')
+
+            if epoch % self.validation_frequency != (self.validation_frequency - 1):
+                self.logger.info('Skip validation...')
+                continue
+                
+            self.logger.info(f'Epoch {epoch + 1}\tStart validation...')
+            model.eval()
+            metrics, score = self.val_epoch(model, val_dataloader)
+
+            self.process_summary(metrics, epoch)
+
+            self.post_preprocessing(score, epoch, model)
+
+            if epoch - self.best_epoch > self.early_stopping:
+                self.logger.info('EARLY STOPPING')
+                break
+        
+        return self.best_score, self.best_epoch
