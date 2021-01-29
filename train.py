@@ -132,7 +132,7 @@ if __name__ == '__main__':
 
         train_dataset = PneumothoraxDataset(
             data_folder=dataset_folder, mode='train',
-            train_transform=train_transform, folder_index=fold_id,
+            transform=train_transform, folder_index=fold_id,
             folds_distr_path=folds_distr_path
         )
         train_sampler = PneumoSampler(folds_distr_path, fold_id, non_empty_mask_prob)
