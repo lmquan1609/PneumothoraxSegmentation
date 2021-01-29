@@ -84,7 +84,7 @@ class Learning:
         with torch.no_grad():
             for batch_idx, (images, labels) in enumerate(tqdm_loader):
                 pred_probs = self.batch_val(model, images)
-                labels = labels.to(device)
+                labels = labels.to(self.device)
                 mask_generator = self.binarizer_fn.transform(pred_probs)
 
                 for curr_threshold, curr_mask in zip(used_thresholds, mask_generator):
