@@ -1,3 +1,5 @@
+# USAGE
+# python train.py --train-config experiments/albunet_valid/train_config_part0.yaml
 import argparse
 import os
 import torch
