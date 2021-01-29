@@ -4,7 +4,7 @@ DATA_DIRECTORY: input/dataset1024
 LOGGER_DIR: log
 
 SEED: 42
-DEVICE: cuda
+DEVICE: cpu
 DEVICE_LIST: [0]
 WORKERS: 12
 
