@@ -125,7 +125,7 @@ if __name__ == '__main__':
 
     eval_module = importlib.import_module(train_config['EVALUATION_METRIC']['PY'])
     eval_fn = getattr(eval_module, train_config['EVALUATION_METRIC']['CLASS'])
-    eval_fn = functools.partial(**train_config['EVALUATION_METRIC']['ARGS'])
+    eval_fn = functools.partial(eval_fn, **train_config['EVALUATION_METRIC']['ARGS'])
 
     for fold_id in usefolds:
         main_logger.info(f'Start training of {fold_id} fold...')
