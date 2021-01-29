@@ -33,7 +33,7 @@ VAL_TRANSFORMS: transforms/val_transforms_1024_old.json
 
 # training
 CRITERION:
-  PY: Losses
+  PY: losses
   CLASS: ComboLoss
   ARGS:
     weights:
