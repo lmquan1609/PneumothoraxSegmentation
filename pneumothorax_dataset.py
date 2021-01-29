@@ -41,7 +41,7 @@ class PneumothoraxDataset(torch.utils.data.Dataset):
             folds = folds[folds['fold'] == fold_index]
 
             self.val_list = folds['fname'].values.tolist()
-            self.num_data = len(self.train_list)
+            self.num_data = len(self.val_list)
 
         elif self.mode == 'test':
             self.test_list = sorted(os.listdir(self.test_image_path))
