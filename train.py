@@ -62,7 +62,7 @@ def train_fold(train_config, experiment_folder, pipeline_name, log_dir, fold_id,
     loss_fn = loss_class(**train_config['CRITERION']['ARGS'])
 
     optimizer_class = getattr(torch.optim, train_config['OPTIMIZER']['CLASS'])
-    optimizer = optimizer_class(model.parameters(), **train_config['CRITERION']['ARGS'])
+    optimizer = optimizer_class(model.parameters(), **train_config['OPTIMIZER']['ARGS'])
     scheduler_class = getattr(torch.optim.lr_scheduler, train_config['SCHEDULER']['CLASS'])
     scheduler = scheduler_class(optimizer, **train_config['SCHEDULER']['ARGS'])
 
