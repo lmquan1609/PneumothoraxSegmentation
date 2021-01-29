@@ -88,7 +88,7 @@ class PneumoSampler(torch.utils.data.Sampler):
 
         self.folds = pd.read_csv(folds_distr_path)
         self.folds['fold'] = self.folds['fold'].astype(str)
-        self.folds = self.folds[folds['fold'] != fold_index].reset_index(drop=True)
+        self.folds = self.folds[self.folds['fold'] != fold_index].reset_index(drop=True)
 
         self.positive_indices = self.folds[self.folds['exist_labels'] == 1].index.values
         self.negative_indices = self.folds[self.folds['exist_labels'] == 0].index.values
