@@ -10,7 +10,7 @@ WORKERS: 12
 
 MODEL:
   PRETRAINED:
-    PIPELINE_PATH: experiments/albunet_val
+    PIPELINE_PATH: experiments/albunet_valid
     CHECKPOINTS_FOLDER: checkpoints
     PIPELINE_NAME: albunet_1024
   FREEZE: False
