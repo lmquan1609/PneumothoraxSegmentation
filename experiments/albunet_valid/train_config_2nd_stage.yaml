@@ -22,7 +22,7 @@ MODEL:
 FOLD:
   NUMBER: 5
   USEFOLDS: [0, 1, 2, 3, 4]
-  FILE: folds/train_folds_5.csv
+  FILE: folds/2nd_stage_folds.csv
 
 # preprocessing
 USE_SAMPLER: True
