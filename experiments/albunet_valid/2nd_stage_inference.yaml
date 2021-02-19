@@ -1,4 +1,4 @@
-DATA_DIRECTORY: input/dataset1024/test
+DATA_DIRECTORY: input/dataset1024/
 
 SEED: 42
 DEVICE: cuda
