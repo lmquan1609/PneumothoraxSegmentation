@@ -77,5 +77,63 @@ def build_submission(rle_dict, sample_sub):
     sub.loc[sub.EncodedPixels == '', 'EncodedPixels'] = -1
     return sub
 
-def load_mask_dict(config):
-    reshape_mode = config.get('')
+def load_mask_dict(cfg):
+    reshape_mode = cfg.get('RESHAPE_MODE', False)
+    if 'MASK_DICT' in cfg:
+        result_path = Path(cfg['MASK_DICT'])
+        with open(result_path, 'rb') as handle:
+            mask_dict = pickle.load(handle)
+        return mask_dict
+    if 'RESULT_WEIGHTS' in cfg:
+        result_weights = cfg['RESULT_WEIGHTS']
+        mask_dict = defaultdict(int)
+        for result_path, weight in result_weights.items():
+            print(result_path, weight)
+            with open(Path(result_path), 'rb') as handle:
+                current_mask_dict = pickle.load(handle)
+                for name, mask in current_mask_dict.items():
+                    if reshape_mode and mask.shape[0] != 1024:
+                        mask = cv2.resize(
+                            mask,
+                            dsize=(1024, 1024), 
+                            interpolation=cv2.INTER_LINEAR
+                        )
+                    #crazy_mask = (mask > 0.75).astype(np.uint8)
+                    #if crazy_mask.sum() < 1000:
+                    #  mask = np.zeros_like(mask)
+                    mask_dict[name] = mask_dict[name] + mask * weight
+        return mask_dict
+
+if __name__ == '__main__':
+    args = argparser()
+    config_path = Path(args.cfg.strip("/"))
+    sub_config = load_yaml(config_path)
+
+    sample_sub = pd.read_csv(sub_config['SAMPLE_SUB'])
+    n_objects_dict = sample_sub.ImageId.value_counts().to_dict()
+
+    print('start loading mask results....')
+    mask_dict = load_mask_dict(sub_config)
+    
+    use_contours = sub_config['USECONTOURS']
+    min_contour_area = sub_config.get('MIN_CONTOUR_AREA', 0)
+
+    area_threshold = sub_config['AREA_THRESHOLD']
+    top_score_threshold = sub_config['TOP_SCORE_THRESHOLD']
+    bottom_score_threshold = sub_config['BOTTOM_SCORE_THRESHOLD']
+    if sub_config['USELEAK']:
+        leak_score_threshold = sub_config['LEAK_SCORE_THRESHOLD']
+    else:
+        leak_score_threshold = bottom_score_threshold
+
+    rle_dict = build_rle_dict(
+        mask_dict, n_objects_dict, area_threshold,
+        top_score_threshold, bottom_score_threshold,
+        leak_score_threshold, use_contours, min_contour_area
+    )
+    sub = build_submission(rle_dict, sample_sub)
+    print((sub.EncodedPixels != -1).sum())
+    print(sub.head())
+    
+    sub_file = Path(sub_config['SUB_FILE'])
+    sub.to_csv(sub_file, index=False)
