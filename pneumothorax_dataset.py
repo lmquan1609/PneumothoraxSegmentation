@@ -66,7 +66,7 @@ class PneumothoraxDataset(torch.utils.data.Dataset):
                 sample = self.transform(**sample)
                 sample = self.to_tensor(**sample)
                 image = sample['image']
-            image_id = self.test_image_path[index].replace('.png', '')
+            image_id = self.test_list[index].replace('.png', '')
             return image_id, image
         
         if self.transform:
