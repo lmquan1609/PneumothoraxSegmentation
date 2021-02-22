@@ -54,8 +54,10 @@ def inference_image(model, images, device):
     masks = masks.squeeze(1).cpu().detach().numpy()
     return masks
 
-def inference_model(model, loader, device, use_flip):
+def inference_model(model, loader, device, use_flip, result_path, split=100):
     mask_dict = {}
+    result_path = str(result_path)
+    counter = 0
     for image_ids, images in tqdm(loader):
         masks = inference_image(model, images, device)
         if use_flip:
@@ -66,7 +68,14 @@ def inference_model(model, loader, device, use_flip):
         
         for name, mask in zip(image_ids, masks):
             mask_dict[name] = mask.astype(np.float32)
-    return mask_dict
+        counter += 1
+        if counter % split == 0 or counter == len(loader):
+            prefix = result_path[:result_path.rfind('.')]
+            path = f'{prefix}_{(counter - 1) // split + 1:02d}.pkl'
+            with open(path, 'wb') as handle:
+                pickle.dump(mask_dict, handle, protocol=pickle.HIGHEST_PROTOCOL)
+            mask_dict = {}
+    return None
 
 if __name__ == '__main__':
     args = argparser()
@@ -96,17 +105,18 @@ if __name__ == '__main__':
 
     use_flip = inference_config['FLIP']
     checkpoints_list = build_checkpoints_list(inference_config)
+    result_path = Path(experiment_folder, inference_config['RESULT'])
 
     mask_dict = defaultdict(int)
     for pred_idx, checkpoint_path in enumerate(checkpoints_list):
         print(checkpoint_path)
         model.load_state_dict(torch.load(checkpoint_path))
         model.eval()
-        current_mask_dict = inference_model(model, dataloader, device, use_flip)
-        for name, mask in current_mask_dict.items():
-            mask_dict[name] = (mask_dict[name] * pred_idx + mask) / (pred_idx + 1)
+        current_mask_dict = inference_model(model, dataloader, device, use_flip, result_path)
+        # for name, mask in current_mask_dict.items():
+        #     mask_dict[name] = (mask_dict[name] * pred_idx + mask) / (pred_idx + 1)
     
-    result_path = Path(experiment_folder, inference_config['RESULT'])
+    
 
-    with open(result_path, 'wb') as handle:
-        pickle.dump(mask_dict, handle, protocol=pickle.HIGHEST_PROTOCOL)
+    # with open(result_path, 'wb') as handle:
+    #     pickle.dump(mask_dict, handle, protocol=pickle.HIGHEST_PROTOCOL)

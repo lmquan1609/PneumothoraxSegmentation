@@ -106,7 +106,7 @@ def load_mask_dict(cfg):
 
 if __name__ == '__main__':
     args = argparser()
-    config_path = Path(args.cfg.strip("/"))
+    config_path = Path(args['config'].strip("/"))
     sub_config = load_yaml(config_path)
 
     sample_sub = pd.read_csv(sub_config['SAMPLE_SUB'])
