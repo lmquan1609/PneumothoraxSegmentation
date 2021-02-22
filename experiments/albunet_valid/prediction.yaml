@@ -1,0 +1,15 @@
+AREA_THRESHOLD: 800
+TOP_SCORE_THRESHOLD: 0.75
+BOTTOM_SCORE_THRESHOLD: 0.3
+LEAK_SCORE_THRESHOLD: 0.15
+USELEAK: False
+
+TRANSFORMS: transforms/val_transforms_1024_old.json
+DEVICE: cpu
+
+CHECKPOINTS:
+  BEST_FOLDER: experiments/albunet_valid/checkpoints
+  PIPELINE_NAME: albunet_1024
+
+USEFOLDS: [0]
+IMAGE_SIZE: 1024
