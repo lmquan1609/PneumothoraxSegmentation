@@ -8,8 +8,8 @@ import cv2
 import numpy as np
 import pydicom
 from pathlib import Path
+import importlib
 
-from models.ternausnet import AlbuNet
 from albumentations.pytorch.transforms import ToTensor
 from skimage.transform import resize
 
@@ -64,7 +64,11 @@ def predict(dcm_path, cfg):
     cv2.imwrite(fn + '.png', image)
     print(f'DCM file is trasformed to PNG in {fn}.png')
 
-    model = AlbuNet(pretrained=False).to(cfg['DEVICE'])
+    # model = AlbuNet(pretrained=False).to(cfg['DEVICE'])
+    module = importlib.import_module(cfg['MODEL']['PY'])
+    model_class = getattr(module, cfg['MODEL']['CLASS'])
+    model = model_class(**cfg['MODEL'].get('ARGS', None)).to(cfg['DEVICE'])
+    
     transform = albu.load(cfg['TRANSFORMS'])
 
     to_tensor = ToTensor()

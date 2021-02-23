@@ -1,0 +1,27 @@
+DATA_DIRECTORY: input/dataset1024/
+
+SEED: 42
+DEVICE: cuda
+BATCH_SIZE: 2
+WORKERS: 4
+
+MODEL:
+  PY: models.selim_zoo.unet
+  CLASS: Resnet
+  ARGS:
+    seg_classes: 1
+    backbone_arch: resnet50
+
+CHECKPOINTS:
+  FULL_FOLDER: checkpoints
+  BEST_FOLDER: checkpoints
+  PIPELINE_PATH: experiments/resnet50
+  PIPELINE_NAME: resnet50
+
+SUBMIT_BEST: True
+USEFOLDS: [0]
+
+TEST_TRANSFORMS: transforms/val_transforms_1024_old.json
+FLIP: True
+
+RESULT: result_top3.pkl

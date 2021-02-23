@@ -1,0 +1,21 @@
+AREA_THRESHOLD: 3000
+TOP_SCORE_THRESHOLD: 0.6
+BOTTOM_SCORE_THRESHOLD: 0.4
+LEAK_SCORE_THRESHOLD: 0.15
+USELEAK: False
+
+TRANSFORMS: transforms/val_transforms_1024_old.json
+DEVICE: cpu
+
+MODEL:
+  PY: models.selim_zoo.unet
+  CLASS: SCSEUnet
+  ARGS:
+    seg_classes: 1
+
+CHECKPOINTS:
+  BEST_FOLDER: experiments/seunet/checkpoints
+  PIPELINE_NAME: seunet
+
+USEFOLDS: [0]
+IMAGE_SIZE: 1024

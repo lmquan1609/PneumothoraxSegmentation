@@ -7,6 +7,7 @@ import cv2
 
 import numpy as np
 import pandas as pd
+import glob
 from collections import defaultdict
 
 from utils.mask_functions import mask2rle
@@ -107,13 +108,14 @@ def load_mask_dict(cfg):
 if __name__ == '__main__':
     args = argparser()
     config_path = Path(args['config'].strip("/"))
+    experiment_folder = config_path.parents[0]
     sub_config = load_yaml(config_path)
 
     sample_sub = pd.read_csv(sub_config['SAMPLE_SUB'])
     n_objects_dict = sample_sub.ImageId.value_counts().to_dict()
 
-    print('start loading mask results....')
-    mask_dict = load_mask_dict(sub_config)
+    # print('start loading mask results....')
+    # mask_dict = load_mask_dict(sub_config)
     
     use_contours = sub_config['USECONTOURS']
     min_contour_area = sub_config.get('MIN_CONTOUR_AREA', 0)
@@ -126,11 +128,16 @@ if __name__ == '__main__':
     else:
         leak_score_threshold = bottom_score_threshold
 
-    rle_dict = build_rle_dict(
-        mask_dict, n_objects_dict, area_threshold,
-        top_score_threshold, bottom_score_threshold,
-        leak_score_threshold, use_contours, min_contour_area
-    )
+    rle_dict = {}
+
+    for mask_dict_path in glob.glob(str(Path(experiment_folder, '*.pkl'))):
+        print(f'Loading {mask_dict_path}...')
+        mask_dict = pickle.loads(open(mask_dict_path, 'rb').read())
+        rle_dict.update(build_rle_dict(
+            mask_dict, n_objects_dict, area_threshold,
+            top_score_threshold, bottom_score_threshold,
+            leak_score_threshold, use_contours, min_contour_area
+        ))
     sub = build_submission(rle_dict, sample_sub)
     print((sub.EncodedPixels != -1).sum())
     print(sub.head())

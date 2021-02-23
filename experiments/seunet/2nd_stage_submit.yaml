@@ -1,0 +1,11 @@
+SAMPLE_SUB: input/stage_2_sample_submission.csv
+MASK_DICT: experiments/seunet/result_top3.pkl
+
+AREA_THRESHOLD: 3000
+TOP_SCORE_THRESHOLD: 0.6
+BOTTOM_SCORE_THRESHOLD: 0.4
+LEAK_SCORE_THRESHOLD: 0.15
+USELEAK: False
+USECONTOURS: False
+
+SUB_FILE: submission/2nd_stage_seunet_valid.csv
