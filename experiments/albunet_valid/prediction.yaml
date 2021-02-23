@@ -7,6 +7,12 @@ USELEAK: False
 TRANSFORMS: transforms/val_transforms_1024_old.json
 DEVICE: cpu
 
+MODEL:
+  PY: models.ternausnet
+  CLASS: AlbuNet
+  ARGS:
+    pretrained: False
+
 CHECKPOINTS:
   BEST_FOLDER: experiments/albunet_valid/checkpoints
   PIPELINE_NAME: albunet_1024
