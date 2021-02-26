@@ -18,6 +18,7 @@ To threshold the probability mask that model returns, three threshold values are
 | ​U-Net with ResNet-34 | 78.6% | 60% | (0.75, 1000, 0.3) |
 | U-Net with ResNet-50 | 86.8% | 88.2% | (0.75, 2000, 0.4) |
 | **U-Net with SE-ResNeXt-50** | 87.2% | **89.4%** | (0.6, 3000, 0.4) |
+
 Our top score is much greater than that of winning solution
 ![](https://res.cloudinary.com/dqagyeboj/image/upload/v1614296737/result_ylysn4.png)
 ## Install
@@ -71,4 +72,4 @@ To submit
 python triplet_submit.py --config experiments/seunet/2nd_stage_submit.yaml
 ```
 ## Demo
-Visit the branch `UI` to launch our demo
+Visit the branch `Thanh` to launch our demo
