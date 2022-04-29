@@ -27,7 +27,6 @@ def get_mask(encode, height, width):
     mask = rle2mask(encode[0], height, width)
     for e in encode[1:]:
         mask += rle2mask(e, height, width)
-    print(mask)
     return mask.T
 
 def conversion_for_train_file(file_name, encode_df, output_path, image_size):
